@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-admission-webhook
+  namespace: kube-system
+  labels:
+    app: pod-admission-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pod-admission-webhook
+  template:
+    metadata:
+      labels:
+        app: pod-admission-webhook
+    spec:
+      containers:
+        - name: pod-admission-webhook
+          command:
+            - "/usr/bin/pod-admission-webhook"
+          args:
+            - "--cert-dir"
+            - "/certs"
+          image: docker.io/zidy/pod-admission-webhook:0.0.4
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /certs
+              readOnly: true
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+          ports:
+            - containerPort: 8443
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: pod-admission-webhook
